@@ -19,3 +19,5 @@ make
 ```
 
 Note that this repository comes with quite a few dependencies as submodules. However, [TinyAD](https://github.com/patr-schm/TinyAD) itself is a lightweight header-only library that only depends on Eigen and has been tested on Linux, Windows, and Mac.
+
+substitute the read_raw_field.h to the one in libs\Directional\include\directional
