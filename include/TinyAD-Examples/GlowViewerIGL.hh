@@ -10,6 +10,9 @@
 #include <TinyAD-Examples/GlowViewerCommon.hh>
 #include <TinyAD-Examples/IGLPolymeshConvert.hh>
 
+#ifndef M_PI
+    #define M_PI      3.14159265359
+#endif
 /**
  * Show a triangle mesh or tetrahedral mesh (igl-style format) using glow viewer.
  * Requires a glow::glfw::GlfwContext to be in scope.
@@ -147,7 +150,7 @@ inline gv::detail::raii_view_closer glow_view_sphere_embedding(
     { // Show sphere
         Eigen::MatrixXd V;
         Eigen::MatrixXi F;
-        igl::readOBJ(DATA_PATH / "sphere.obj", V, F);
+        igl::readOBJ(DATA_PATH.string() +  "/sphere.obj", V, F);
         glow_view_mesh(V, F, false, "", glow_default_wireframe_color, glow_default_wireframe_width_px, _mesh_color);
     }
 
