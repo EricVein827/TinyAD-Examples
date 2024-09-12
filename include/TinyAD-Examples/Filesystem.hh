@@ -5,11 +5,13 @@
 #pragma once
 
 #include <TinyAD/Utils/Out.hh>
-#include <experimental/filesystem>
+#include <filesystem>
 #include <fstream>
 #include <iomanip>
 
-namespace fs = std::experimental::filesystem;
+//#define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING;
+
+namespace fs = std::filesystem;
 
 inline fs::path SOURCE_PATH = fs::path(SOURCE_PATH_STR);
 inline fs::path DATA_PATH = fs::path(DATA_PATH_STR);
@@ -25,7 +27,7 @@ inline void append_to_file(
         const fs::path& _file_path,
         const std::string& _line)
 {
-    make_file_directory(_file_path);
+    make_file_directory(_file_path.string());
 
     std::ofstream file(_file_path, std::ofstream::app);
     TINYAD_ASSERT(file.good());
