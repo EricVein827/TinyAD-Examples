@@ -1,68 +1,83 @@
-/*
- * This file is part of TinyAD and released under the MIT license.
- * Author: Patrick Schmidt
- */
-#pragma once
-
-#include <TinyAD/Utils/Out.hh>
-#include <filesystem>
+// This file is part of Directional, a library for directional field processing.
+// Copyright (C) 2018 Amir Vaxman <avaxman@gmail.com>
+//
+// This Source Code Form is subject to the terms of the Mozilla Public License
+// v. 2.0. If a copy of the MPL was not distributed with this file, You can
+// obtain one at http://mozilla.org/MPL/2.0/.
+#ifndef DIRECTIONAL_READ_RAW_FIELD_H
+#define DIRECTIONAL_READ_RAW_FIELD_H
+#include <cmath>
+#include <Eigen/Core>
+#include <string>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <fstream>
-#include <iomanip>
 
-//#define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING;
 
-namespace fs = std::filesystem;
-
-inline fs::path SOURCE_PATH = fs::path(SOURCE_PATH_STR);
-inline fs::path DATA_PATH = fs::path(DATA_PATH_STR);
-inline fs::path OUTPUT_PATH = fs::path(OUTPUT_PATH_STR);
-
-inline void make_file_directory(
-        const std::string& _file_path)
+namespace directional
 {
-    fs::create_directories(fs::path(_file_path).parent_path());
+    bool IGL_INLINE read_TXT(const std::string& fileName,
+        int& numF,
+        std::vector<Eigen::VectorXd>& rawField)
+    {
+        try
+        {
+            std::ifstream f(fileName);
+            if (!f.is_open()) {
+                return false;
+            }
+            char buf[1024];
+            numF = 0;
+            while (f.getline(buf, sizeof(buf)))   // 读入文件行于buf
+            {
+                std::stringstream line(buf);         // 将line改为字符串
+
+                //int f1, f2, f3;
+                //line >> f1 >> f2 >> f3;
+                //F2F[F2N[Eigen::Vector3i(f1, f2, f3)]] = cnt; // F2F[0] denotes 
+                //cnt++;
+
+                double x1, x2, x3, x4, x5, x6;
+                line >> x1 >> x2 >> x3 >> x4 >> x5 >> x6;
+                Eigen::VectorXd X(12);
+                X << x1, x2, x3, x4, x5, x6, -x1, -x2, -x3, -x4, -x5, -x6;
+                rawField.emplace_back(X);
+                numF++;
+            }
+
+            f.close();
+            return f.good();
+        }
+        catch (std::exception e)
+        {
+            return false;
+        }
+    }
+
+  // Reads a raw field from a file
+  // Inputs:
+  //   fileName: The to be loaded file.
+  // Outputs:
+  //   N: The degree of the field
+  //   rawField: the read field in raw #F by 3*N xyzxyz format
+  // Return:
+  //   Whether or not the file was read successfully
+  bool IGL_INLINE read_raw_field(const std::string &fileName,
+                                 int& N,
+                                 Eigen::MatrixXd& rawField)
+  {
+      std::vector<Eigen::VectorXd> raw;
+      int numF;
+      N = 4;
+      read_TXT(fileName, numF, raw);
+
+      rawField.conservativeResize(numF, 3 * N);
+
+      for (int i = 0; i < rawField.rows(); i++)
+          for (int j = 0; j < rawField.cols(); j++)
+              rawField(i, j) = raw[i](j);
+      return true;
+  }
 }
 
-inline void append_to_file(
-        const fs::path& _file_path,
-        const std::string& _line)
-{
-    make_file_directory(_file_path.string());
-
-    std::ofstream file(_file_path, std::ofstream::app);
-    TINYAD_ASSERT(file.good());
-
-    file << _line << std::endl;
-
-    TINYAD_INFO("Wrote (append) " << _file_path);
-}
-
-template<typename Arg0, typename ...Args>
-void append_to_csv(
-        const fs::path& _file_path,
-        Arg0 arg0,
-        Args ...args)
-{
-    std::stringstream s;
-    s << arg0;
-    ((s << ", " << args), ...);
-    append_to_file(_file_path, s.str());
-}
-
-inline std::string pad_integer(
-        const int _i,
-        const int _pad = 6)
-{
-    std::ostringstream s;
-    s << std::setw(_pad) << std::setfill('0') << _i;
-
-    return s.str();
-}
-
-inline std::string int_filename(
-        const int _i,
-        const int _pad = 6,
-        const std::string& _extension = ".png")
-{
-    return pad_integer(_i, _pad) + _extension;
-}
+#endif
