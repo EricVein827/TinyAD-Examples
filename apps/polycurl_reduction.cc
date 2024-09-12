@@ -24,7 +24,7 @@ Eigen::VectorXd read_initial_x(
     // Read field from file.
     int n = 0;
     Eigen::MatrixXd vector_field_4; // #F by 12 matrix: 4 3D vectors per face.
-    directional::read_raw_field(_path, n, vector_field_4);
+    directional::read_raw_field(_path.string(), n, vector_field_4);
     TINYAD_ASSERT_GEQ(n, 4);
     TINYAD_ASSERT_EQ(vector_field_4.rows(), _B1.rows());
     TINYAD_ASSERT_EQ(vector_field_4.rows(), _B2.rows());
@@ -48,7 +48,7 @@ Eigen::VectorXd read_initial_x(
  * described in Integrable PolyVector Fields [Diamanti 2015].
  * Reduces curl of a 2-vector field on a triangle mesh.
  */
-int main()
+int main(int argc, char** argv)
 {
     // Init glow viewer
     glow::glfw::GlfwContext ctx;
@@ -56,7 +56,8 @@ int main()
     // Load mesh
     Eigen::MatrixXd V; // #V by 3
     Eigen::MatrixXi F; // #F by 3
-    igl::readOFF(DATA_PATH / "cheburashka.off", V, F);
+    //igl::readOFF(DATA_PATH.string() +  "/cheburashka.off", V, F);
+    igl::readOBJ(DATA_PATH.string() + argv[1], V, F);
 
     // Compute local basis per face
     Eigen::MatrixXd B1; // #F by 3. First basis vector per face.
@@ -75,7 +76,7 @@ int main()
     // Read initial field from file.
     // We represent a field as a vector of size 4 * #F,
     // where four consecutive entries are two tangent vectors in a local basis.
-    Eigen::VectorXd x_init = read_initial_x(DATA_PATH / "cheburashka.rawfield", B1, B2);
+    Eigen::VectorXd x_init = read_initial_x(DATA_PATH / argv[2], B1, B2);
     Eigen::VectorXd x = x_init;
     Eigen::VectorXd x_prev = x_init; // Track x of previous iteration
 
@@ -230,7 +231,7 @@ int main()
     Eigen::VectorXd d; // Update direction
     TinyAD::LinearSolver solver; // Linear solver storing pre-factorization
     double step_size = 0.1; // Adaptive step size
-    const int max_iters = 60;
+    const int max_iters = 1;
     for (int iter = 0; iter < max_iters; ++iter)
     {
         // Compute derivatives and Gauss-Newton direction
@@ -272,10 +273,10 @@ int main()
 
     // View initial and optimized frame fields with polycurl heatmap
     auto grid = gv::grid();
-    glow_view_frame_field(V, F, B1, B2, x_init, 3000, 0.2, 0.00225, false, true);
-    glow_view_frame_field(V, F, B1, B2, x, 3000, 0.2, 0.00225, false, true);
-    glow_view_polycurl(V, F, x_init, EV, EF, e_f_conj, e_g_conj, 1e-6, 0.02);
-    glow_view_polycurl(V, F, x, EV, EF, e_f_conj, e_g_conj, 1e-6, 0.02);
+    glow_view_frame_field(V, F, B1, B2, x_init, std::stoi(argv[3]), 0.4, 0.00325, false, true);
+    //glow_view_frame_field(V, F, B1, B2, x, 3000, 0.2, 0.00225, false, true);
+    //glow_view_polycurl(V, F, x_init, EV, EF, e_f_conj, e_g_conj, 1e-6, 0.02);
+    //glow_view_polycurl(V, F, x, EV, EF, e_f_conj, e_g_conj, 1e-6, 0.02);
 
     return 0;
 }
