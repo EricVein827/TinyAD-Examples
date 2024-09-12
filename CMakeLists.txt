@@ -4,6 +4,8 @@ cmake_minimum_required(VERSION 3.9)
 # Project name
 project(TinyAD-Examples)
 
+add_definitions(-D_USE_MATH_DEFINES)
+
 # ===============================================
 # Global settings
 
@@ -98,7 +100,7 @@ target_link_libraries(TinyAD-Examples PUBLIC
     glow
     imgui
     glow-extras
-    stdc++fs
+    # stdc++
     TinyAD
 )
 if (TARGET OpenMP::OpenMP_CXX)
