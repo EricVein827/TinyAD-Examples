@@ -10,7 +10,7 @@ These examples have been tested on Linux and require:
 
 Build the examples via:
 ```
-git clone --recursive https://github.com/patr-schm/TinyAD-Examples.git
+git clone --recursive https://github.com/EricVein827/TinyAD-Examples.git
 cd TinyAD-Examples
 mkdir build
 cd build
